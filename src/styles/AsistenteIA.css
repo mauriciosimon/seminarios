@@ -445,3 +445,107 @@
 .create-hint p {
   margin: 0;
 }
+
+/* Context info section */
+.chat-context-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.active-chapter-info,
+.selected-docs-info {
+  padding: 6px 12px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  color: #555;
+}
+
+.btn-undo-global,
+.btn-undo {
+  padding: 6px 12px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-undo-global:hover,
+.btn-undo:hover {
+  background: #f57c00;
+  transform: translateY(-1px);
+}
+
+.btn-undo-global:active,
+.btn-undo:active {
+  transform: translateY(0);
+}
+
+/* Message actions with intent-based buttons */
+.message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #000;
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-action.btn-create {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.btn-action.btn-create:hover:not(:disabled) {
+  background: #4caf50;
+  color: white;
+}
+
+.btn-action.btn-apply {
+  border-color: #2196f3;
+  color: #2196f3;
+}
+
+.btn-action.btn-apply:hover:not(:disabled) {
+  background: #2196f3;
+  color: white;
+}
+
+/* System messages with undo option */
+.chat-message.system {
+  background: #e3f2fd;
+  border-left: 3px solid #2196f3;
+  padding: 10px 15px;
+  margin: 8px 0;
+  border-radius: 4px;
+  font-size: 14px;
+}

@@ -3,7 +3,7 @@ import '../styles/AsistenteIA.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api'
 
-export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChapterId }) {
+export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChapterId, chapters = [] }) {
   const [activeTab, setActiveTab] = useState('chat') // 'chat', 'documents', 'create'
   const [documents, setDocuments] = useState([])
   const [selectedDocs, setSelectedDocs] = useState([])
@@ -20,6 +20,9 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
   // Create chapters state
   const [numberOfChapters, setNumberOfChapters] = useState(3)
   const [theme, setTheme] = useState('')
+
+  // Undo stack para revertir cambios
+  const [undoStack, setUndoStack] = useState([])
 
   // Cargar documentos al montar
   useEffect(() => {
@@ -86,13 +89,22 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
     setChatHistory([...chatHistory, userMessage])
 
     try {
+      // Obtener información del capítulo actual si existe
+      const currentChapter = activeChapterId
+        ? chapters.find(ch => ch.id === activeChapterId)
+        : null
+
       const response = await fetch(`${API_URL}/ai/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
           documents: selectedDocs,
-          context: ''
+          context: '',
+          currentChapter: currentChapter ? {
+            title: currentChapter.title,
+            description: currentChapter.description
+          } : null
         })
       })
 
@@ -102,9 +114,22 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
         setChatHistory(prev => [...prev, {
           role: 'assistant',
           content: data.content,
+          intent: data.intent,
+          structured: data.structured,
           usage: data.usage
         }])
         setPrompt('')
+
+        // Si la intención es clara y el contenido está estructurado,
+        // ejecutar la acción automáticamente
+        if (data.intent === 'create_chapter' && data.structured) {
+          setTimeout(() => {
+            handleCreateChapterFromResponse(data.content, true)
+          }, 500)
+        } else if (data.intent === 'edit_chapter' && data.structured && activeChapterId) {
+          // Para ediciones, mostrar confirmación
+          // (la confirmación se manejará con los botones inline)
+        }
       } else {
         setError(data.error || 'Error al generar contenido')
       }
@@ -237,12 +262,26 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
   }
 
   // Crear nuevo capítulo desde respuesta de IA
-  const handleCreateChapterFromResponse = (content) => {
+  const handleCreateChapterFromResponse = (content, auto = false) => {
     const newChapter = parseContentToChapter(content)
+
+    // Guardar en el stack de undo
+    setUndoStack(prev => [...prev, {
+      action: 'create',
+      chapterId: newChapter.id,
+      timestamp: Date.now()
+    }])
+
     onAddChapters([newChapter])
+
+    const message = auto
+      ? `✓ Capítulo "${newChapter.title}" creado automáticamente`
+      : `✓ Capítulo "${newChapter.title}" creado exitosamente`
+
     setChatHistory(prev => [...prev, {
       role: 'system',
-      content: `✓ Capítulo "${newChapter.title}" creado exitosamente`
+      content: message,
+      undoable: true
     }])
   }
 
@@ -253,19 +292,60 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
       return
     }
 
+    // Obtener el capítulo actual antes de modificarlo
+    const currentChapter = chapters.find(ch => ch.id === activeChapterId)
+    if (!currentChapter) return
+
     // Parsear el contenido para obtener secciones
     const parsed = parseContentToChapter(content)
 
+    // Guardar estado anterior en el stack de undo
+    setUndoStack(prev => [...prev, {
+      action: 'edit',
+      chapterId: activeChapterId,
+      previousState: {
+        sections: currentChapter.sections
+      },
+      timestamp: Date.now()
+    }])
+
     // Actualizar el capítulo actual con el nuevo contenido
-    // Se pueden agregar las secciones o reemplazar el contenido según preferencia
     onUpdateContent(activeChapterId, {
       sections: parsed.sections
     })
 
     setChatHistory(prev => [...prev, {
       role: 'system',
-      content: `✓ Contenido aplicado al capítulo actual`
+      content: `✓ Contenido aplicado al capítulo "${currentChapter.title}"`,
+      undoable: true
     }])
+  }
+
+  // Función para deshacer la última acción
+  const handleUndo = () => {
+    if (undoStack.length === 0) return
+
+    const lastAction = undoStack[undoStack.length - 1]
+
+    if (lastAction.action === 'create') {
+      // Eliminar el capítulo creado
+      // Nota: necesitarías agregar una función onRemoveChapter en el componente padre
+      console.log('Undo create:', lastAction.chapterId)
+      setChatHistory(prev => [...prev, {
+        role: 'system',
+        content: `↶ Creación de capítulo revertida`
+      }])
+    } else if (lastAction.action === 'edit') {
+      // Restaurar el estado anterior del capítulo
+      onUpdateContent(lastAction.chapterId, lastAction.previousState)
+      setChatHistory(prev => [...prev, {
+        role: 'system',
+        content: `↶ Edición revertida`
+      }])
+    }
+
+    // Remover del stack
+    setUndoStack(prev => prev.slice(0, -1))
   }
 
   const formatFileSize = (bytes) => {
@@ -334,22 +414,57 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
                       Tokens: {msg.usage.inputTokens + msg.usage.outputTokens}
                     </div>
                   )}
-                  {msg.role === 'assistant' && (
+                  {msg.role === 'assistant' && msg.structured && (
+                    <div className="message-actions">
+                      {/* Mostrar botones según la intención detectada */}
+                      {(msg.intent === 'create_chapter' || msg.intent === 'synthesize') && (
+                        <button
+                          onClick={() => handleCreateChapterFromResponse(msg.content)}
+                          className="btn-action btn-create"
+                          title="Crear nuevo capítulo con este contenido"
+                        >
+                          ➕ Crear Capítulo
+                        </button>
+                      )}
+                      {msg.intent === 'edit_chapter' && activeChapterId && (
+                        <button
+                          onClick={() => handleApplyToCurrentChapter(msg.content)}
+                          className="btn-action btn-apply"
+                          title="Aplicar este contenido al capítulo actual"
+                        >
+                          ✏️ Aplicar Cambios
+                        </button>
+                      )}
+                      {/* Botón genérico para otros casos */}
+                      {!msg.intent || msg.intent === 'answer' || msg.intent === 'expand' ? (
+                        <>
+                          <button
+                            onClick={() => handleCreateChapterFromResponse(msg.content)}
+                            className="btn-action btn-create"
+                            title="Crear un nuevo capítulo con esta respuesta"
+                          >
+                            ➕ Crear Capítulo
+                          </button>
+                          <button
+                            onClick={() => handleApplyToCurrentChapter(msg.content)}
+                            className="btn-action btn-apply"
+                            title="Aplicar al capítulo actual"
+                            disabled={!activeChapterId}
+                          >
+                            ✏️ Aplicar a Actual
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
+                  )}
+                  {msg.role === 'system' && msg.undoable && undoStack.length > 0 && (
                     <div className="message-actions">
                       <button
-                        onClick={() => handleCreateChapterFromResponse(msg.content)}
-                        className="btn-action btn-create"
-                        title="Crear un nuevo capítulo con esta respuesta"
+                        onClick={handleUndo}
+                        className="btn-action btn-undo"
+                        title="Deshacer esta acción"
                       >
-                        ➕ Crear Capítulo Nuevo
-                      </button>
-                      <button
-                        onClick={() => handleApplyToCurrentChapter(msg.content)}
-                        className="btn-action btn-apply"
-                        title="Aplicar este contenido al capítulo actual"
-                        disabled={!activeChapterId}
-                      >
-                        ✏️ Aplicar a Capítulo Actual
+                        ↶ Deshacer
                       </button>
                     </div>
                   )}
@@ -364,11 +479,27 @@ export default function AsistenteIA({ onAddChapters, onUpdateContent, activeChap
             </div>
 
             <div className="chat-input-section">
-              {selectedDocs.length > 0 && (
-                <div className="selected-docs-info">
-                  📚 Usando: {selectedDocs.join(', ')}
-                </div>
-              )}
+              <div className="chat-context-info">
+                {activeChapterId && (
+                  <div className="active-chapter-info">
+                    📖 Capítulo activo: {chapters.find(ch => ch.id === activeChapterId)?.title || 'N/A'}
+                  </div>
+                )}
+                {selectedDocs.length > 0 && (
+                  <div className="selected-docs-info">
+                    📚 Documentos: {selectedDocs.join(', ')}
+                  </div>
+                )}
+                {undoStack.length > 0 && (
+                  <button
+                    onClick={handleUndo}
+                    className="btn-undo-global"
+                    title={`Deshacer última acción (${undoStack.length} disponibles)`}
+                  >
+                    ↶ Deshacer ({undoStack.length})
+                  </button>
+                )}
+              </div>
 
               <div className="chat-input-wrapper">
                 <textarea

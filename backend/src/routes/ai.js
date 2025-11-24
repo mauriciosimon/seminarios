@@ -16,10 +16,40 @@ const anthropic = new Anthropic({
 
 const DOCS_DIR = path.join(__dirname, '../../../docs');
 
-// POST /api/ai/generate - Generar contenido con IA
+// Función auxiliar para detectar intención del usuario
+function detectIntent(prompt) {
+  const lowerPrompt = prompt.toLowerCase();
+
+  // Detectar creación de capítulo
+  if (lowerPrompt.match(/crea(r)?|genera(r)?|nuevo|añad(e|ir)/i) &&
+      lowerPrompt.match(/cap[ií]tulo/i)) {
+    return 'create_chapter';
+  }
+
+  // Detectar edición de capítulo actual
+  if (lowerPrompt.match(/edit(a|ar)|modific(a|ar)|actualiz(a|ar)|cambi(a|ar)|mejora(r)?/i) &&
+      (lowerPrompt.match(/cap[ií]tulo/i) || lowerPrompt.match(/este|actual|secci[óo]n/i))) {
+    return 'edit_chapter';
+  }
+
+  // Detectar síntesis/resumen
+  if (lowerPrompt.match(/s[ií]ntesis|sintetiza(r)?|resumen|resume|consolida(r)?/i)) {
+    return 'synthesize';
+  }
+
+  // Detectar expansión de contenido
+  if (lowerPrompt.match(/expand(e|ir)|amplía|desarrolla(r)?|profundiza(r)?|detalla(r)?/i)) {
+    return 'expand';
+  }
+
+  // Por defecto: respuesta informativa
+  return 'answer';
+}
+
+// POST /api/ai/generate - Generar contenido con IA y detectar intención
 router.post('/generate', async (req, res) => {
   try {
-    const { prompt, documents = [], context = '' } = req.body;
+    const { prompt, documents = [], context = '', currentChapter = null } = req.body;
 
     if (!prompt) {
       return res.status(400).json({
@@ -36,6 +66,9 @@ router.post('/generate', async (req, res) => {
       });
     }
 
+    // Detectar la intención del usuario
+    const intent = detectIntent(prompt);
+
     // Cargar contenido de los documentos seleccionados
     let documentsContent = '';
     if (documents.length > 0) {
@@ -50,17 +83,38 @@ router.post('/generate', async (req, res) => {
       }
     }
 
-    // Construir el prompt para Claude
-    const systemPrompt = `Eres un asistente especializado en meta-chamanismo que ayuda a crear contenido para seminarios educativos.
+    // Construir el prompt para Claude según la intención
+    let systemPrompt = `Eres un asistente especializado en meta-chamanismo que ayuda a crear contenido para seminarios educativos.
 Tu tarea es generar contenido estructurado, claro y educativo basándote en los documentos proporcionados.
 
 Cuando generes contenido:
 - Mantén un tono académico pero accesible
-- Estructura el contenido con títulos y secciones claras
-- Basa tus respuestas en los documentos proporcionados
-- Si generas capítulos, incluye título, descripción y secciones con contenido detallado`;
+- Estructura el contenido con títulos y secciones claras usando markdown
+- Basa tus respuestas en los documentos proporcionados`;
 
-    const userPrompt = `${context ? `Contexto adicional: ${context}\n\n` : ''}${documentsContent ? `Documentos de referencia:${documentsContent}\n\n` : ''}Tarea: ${prompt}`;
+    let structuredOutput = false;
+
+    if (intent === 'create_chapter' || intent === 'synthesize') {
+      systemPrompt += `\n\nDEBES generar un capítulo completo en el siguiente formato markdown:
+
+# Título del Capítulo
+
+*Descripción breve del capítulo*
+
+## Sección 1
+
+Contenido detallado de la sección 1...
+
+## Sección 2
+
+Contenido detallado de la sección 2...`;
+      structuredOutput = true;
+    } else if (intent === 'edit_chapter') {
+      systemPrompt += `\n\nDEBES generar contenido estructurado con secciones que puedan integrarse al capítulo existente.`;
+      structuredOutput = true;
+    }
+
+    const userPrompt = `${context ? `Contexto adicional: ${context}\n\n` : ''}${currentChapter ? `Capítulo actual:\nTítulo: ${currentChapter.title}\nDescripción: ${currentChapter.description}\n\n` : ''}${documentsContent ? `Documentos de referencia:${documentsContent}\n\n` : ''}Tarea: ${prompt}`;
 
     // Llamar a la API de Claude
     const message = await anthropic.messages.create({
@@ -80,6 +134,8 @@ Cuando generes contenido:
     res.json({
       success: true,
       content: generatedContent,
+      intent: intent,
+      structured: structuredOutput,
       usage: {
         inputTokens: message.usage.input_tokens,
         outputTokens: message.usage.output_tokens

@@ -414,6 +414,7 @@ function App() {
             onAddChapters={handleAddChaptersFromAI}
             onUpdateContent={updateChapter}
             activeChapterId={activeChapterId}
+            chapters={chapters}
           />
         )}
       </div>
