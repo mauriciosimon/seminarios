@@ -1,0 +1,112 @@
+.import-modal {
+  max-width: 700px;
+}
+
+.import-instructions {
+  padding: 1.5rem 2rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.import-instructions h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.import-instructions p {
+  margin: 0 0 0.75rem 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.import-instructions ul {
+  margin: 0 0 1rem 0;
+  padding-left: 1.5rem;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.import-instructions li {
+  margin: 0.25rem 0;
+}
+
+.import-instructions strong {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.btn-example {
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.btn-example:hover {
+  background: #5568d3;
+}
+
+.import-textarea {
+  width: 100%;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1.5rem 2rem;
+  font-size: 0.9rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  color: #333;
+}
+
+.import-textarea::placeholder {
+  color: #999;
+}
+
+.modal-actions {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  background: #fafafa;
+}
+
+.modal-actions .btn-secondary {
+  background: #e0e0e0;
+  color: #333;
+  padding: 0.6rem 1.2rem;
+}
+
+.modal-actions .btn-secondary:hover {
+  background: #d0d0d0;
+}
+
+.modal-actions .btn-primary {
+  background: #667eea;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  font-weight: 500;
+}
+
+.modal-actions .btn-primary:hover {
+  background: #5568d3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .import-instructions,
+  .import-textarea,
+  .modal-actions {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+}

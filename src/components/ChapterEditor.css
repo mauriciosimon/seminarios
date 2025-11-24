@@ -1,0 +1,269 @@
+.chapter-editor {
+  background: white;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.chapter-header {
+  padding: 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.chapter-title-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #333;
+  padding: 0.5rem 0;
+  margin-bottom: 0.75rem;
+  outline: none;
+  font-family: inherit;
+}
+
+.chapter-title-input:focus {
+  color: #667eea;
+}
+
+.chapter-description-input {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  background: white;
+  font-size: 1rem;
+  color: #666;
+  padding: 0.75rem;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: inherit;
+  outline: none;
+}
+
+.chapter-description-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.sections-header {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sections-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.btn-add-section {
+  background: #667eea;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.btn-add-section:hover {
+  background: #5568d3;
+}
+
+.sections {
+  padding: 1rem 2rem 2rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-style: italic;
+}
+
+.section {
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s;
+}
+
+.section:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.section-title-input {
+  flex: 1;
+  border: none;
+  background: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+.section-title-input:focus {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.btn-delete-section {
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+}
+
+.btn-delete-section:hover {
+  background: #fff5f5;
+  transform: scale(1.1);
+}
+
+.editor-toolbar {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.editor-toolbar button {
+  background: transparent;
+  color: #666;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+.editor-toolbar button:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.editor-toolbar button.active {
+  background: #667eea;
+  color: white;
+}
+
+.toolbar-divider {
+  width: 1px;
+  background: #e0e0e0;
+  margin: 0 0.25rem;
+}
+
+.section-content-input {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  background: white;
+  font-size: 0.95rem;
+  color: #333;
+  padding: 1rem;
+  border-radius: 6px;
+  resize: vertical;
+  font-family: 'Monaco', 'Courier New', monospace;
+  line-height: 1.6;
+  outline: none;
+}
+
+.section-content-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.section-content-preview {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 1.5rem;
+  min-height: 100px;
+  cursor: pointer;
+  line-height: 1.8;
+  color: #333;
+}
+
+.section-content-preview:hover {
+  border-color: #667eea;
+}
+
+.section-content-preview h1 {
+  font-size: 1.8rem;
+  margin: 1rem 0;
+  color: #333;
+}
+
+.section-content-preview h2 {
+  font-size: 1.4rem;
+  margin: 0.75rem 0;
+  color: #444;
+}
+
+.section-content-preview h3 {
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.section-content-preview strong {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.section-content-preview em {
+  font-style: italic;
+  color: #764ba2;
+}
+
+.section-content-preview ul {
+  margin: 0.5rem 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.section-content-preview li {
+  padding-left: 1.5rem;
+  position: relative;
+  margin: 0.25rem 0;
+}
+
+.section-content-preview li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chapter-header,
+  .sections-header,
+  .sections {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .chapter-title-input {
+    font-size: 1.4rem;
+  }
+
+  .section {
+    padding: 1rem;
+  }
+}

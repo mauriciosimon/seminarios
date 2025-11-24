@@ -1,0 +1,136 @@
+.chapter-list {
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chapter-list-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chapter-list-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.chapters {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.chapter-item {
+  background: #f8f9fa;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.chapter-item:hover {
+  background: #f0f0f0;
+  transform: translateX(2px);
+}
+
+.chapter-item.active {
+  background: #ede7f6;
+  border-color: #667eea;
+}
+
+.chapter-item.dragging {
+  opacity: 0.5;
+}
+
+.chapter-drag-handle {
+  color: #999;
+  cursor: grab;
+  font-size: 1rem;
+  user-select: none;
+}
+
+.chapter-drag-handle:active {
+  cursor: grabbing;
+}
+
+.chapter-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chapter-number {
+  font-size: 0.75rem;
+  color: #667eea;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.chapter-title {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chapter-meta {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.btn-delete-chapter {
+  background: transparent;
+  color: #999;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.5rem;
+  line-height: 1;
+  opacity: 0;
+  transition: all 0.2s;
+}
+
+.chapter-item:hover .btn-delete-chapter {
+  opacity: 1;
+}
+
+.btn-delete-chapter:hover {
+  color: #e53e3e;
+  background: #fff5f5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .chapter-list {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    max-height: 40vh;
+  }
+
+  .chapters {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5rem;
+  }
+
+  .chapter-item {
+    min-width: 200px;
+    margin-right: 0.5rem;
+    margin-bottom: 0;
+  }
+}
